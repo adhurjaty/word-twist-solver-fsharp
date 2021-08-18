@@ -18,5 +18,7 @@ let boardInput = File.ReadAllLines "./board.txt"
 
 [<EntryPoint>]
 let main argv =
-    printf "%s" (String.concat "\n" <| solve boardInput words)
+    let solvedWords = solve boardInput words
+    printfn "%s" (String.concat "\n" solvedWords)
+    printfn "%i" solvedWords.Count
     0 // return an integer exit code
