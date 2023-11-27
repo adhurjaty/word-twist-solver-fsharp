@@ -1,16 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <WarnOn>3390;$(WarnOn)</WarnOn>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="PuzzleBoard.fs" />
+    <Compile Include="WordTwistBoard.fs" />
+    <Compile Include="LetterboxedBoard.fs" />
     <Compile Include="WordDictionary.fs" />
-    <Compile Include="Solver.fs" />
+    <Compile Include="SolverUtils.fs" />
+    <Compile Include="LetterboxedSolver.fs" />
+    <Compile Include="WordTwistSolver.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
 </Project>
