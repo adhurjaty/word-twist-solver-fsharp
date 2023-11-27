@@ -1,38 +1,32 @@
 module Solver
 
-open IntermediateRepresentation.WordDictionary
-open IntermediateRepresentation.PuzzleBoard
+open WordDictionary
+open PuzzleBoard
 
-
-let getWordsFromStart board trie coords =
+let getWordsFromStart board (trie: Node) coords =
     let getLetter = getBoardLetter board
     let getNeighbors = getSurroundingLetters board
 
-    let rec getWordsHelper board trie (x, y) =
+    let rec getWordsHelper board (trie: Node) (x, y) =
         let neighbors = getNeighbors (x, y)
 
-        let findEligibleNeighbors branches =
-            branches
-            |> List.choose (fun nextBranch -> 
-                neighbors
-                |> List.tryFind (fun (c, _) -> 
-                    match nextBranch.node with
-                    | Letter c' | WordTerminal (c', _) when c' = c -> true
-                    | _ -> false)
-                |> Option.map (fun neighbor -> (nextBranch, neighbor)))
+        let findEligibleNeighbors =
+            neighbors
+            |> List.choose (fun (letter, coord) ->
+                trie.nodeAt letter
+                |> Option.map (fun node -> (node, coord)))
 
-        let currentWord = match trie.node with
-                            | Root | Letter _ -> []
-                            | WordTerminal (_, word) -> [word]
+        let currentWord = match trie.value with
+                          | RunnningWord _ -> []
+                          | FullWord word -> [word]
         currentWord 
-        @ (trie.branches
-            |> findEligibleNeighbors
-            |> List.collect (fun (nextBranch, (_, coord)) -> 
+        @ (findEligibleNeighbors
+            |> List.collect (fun (nextBranch, coord) -> 
                 getWordsHelper board nextBranch coord))
 
     
     let letter = getLetter coords
-    getBranch trie letter
+    trie.nodeAt letter
     |> Option.map (fun branch -> getWordsHelper board branch coords)
     |> Option.defaultValue []
 

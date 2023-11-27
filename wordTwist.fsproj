@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="IntermediateRepresentation.fs" />
+    <Compile Include="PuzzleBoard.fs" />
+    <Compile Include="WordDictionary.fs" />
     <Compile Include="Solver.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
