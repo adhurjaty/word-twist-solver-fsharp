@@ -4,11 +4,8 @@ open WordDictionary
 open PuzzleBoard
 
 let getWordsFromStart board (trie: Node) coords =
-    let getLetter = getBoardLetter board
-    let getNeighbors = getSurroundingLetters board
-
     let rec getWordsHelper board (trie: Node) (x, y) =
-        let neighbors = getNeighbors (x, y)
+        let neighbors = board.neighbors (x, y)
 
         let findEligibleNeighbors =
             neighbors
@@ -25,7 +22,7 @@ let getWordsFromStart board (trie: Node) coords =
                 getWordsHelper board nextBranch coord))
 
     
-    let letter = getLetter coords
+    let letter = board.letter coords
     trie.nodeAt letter
     |> Option.map (fun branch -> getWordsHelper board branch coords)
     |> Option.defaultValue []
@@ -36,7 +33,7 @@ let getAllWords board trie =
 
     List.fold (fun wordSet coord -> Set.union wordSet (Set.ofList (wordGetter coord))) 
         <| Set.empty
-        <| getAllCoords board
+        <| board.allCoords
 
 
 let solve boardWords dictWords =
