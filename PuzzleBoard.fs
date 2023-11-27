@@ -1,76 +1,49 @@
 
 module PuzzleBoard
 
-type private Element =
-| Border
-| Tile of char
-
-type private Point = int * int
+type BoardNode =
+    {
+        value: char;
+        neighbors: Lazy<List<BoardNode>>;
+    }
 
 type Board =
     {
-        neighbors: Point -> (char * Point) list;
-        letter: Point -> char;
-        allCoords: Point list;
+        allNodes: BoardNode list;
     }
 
-let private getSurroundingLettersKernel kernelSize (board : Element[,]) (x, y) =
+let private getCoordsKernel kernelSize (boardWidth, boardHeight) coord =
     let offset = kernelSize / 2
+    let x, y = coord
 
-    List.allPairs [x + 1 - offset .. x + 1 + offset] [y + 1 - offset .. y + 1 + offset]
-    |> List.filter (fun (i, j) -> i - 1 <> x || j - 1 <> y)
-    |> List.map (fun (i, j) -> board.[i,j], (i, j))
-    |> List.choose (fun (element, (i, j)) ->
-        match element with
-        | Tile c -> Some (c, (i-1, j-1))
-        | Border -> None)
+    List.allPairs [x - offset .. x + offset] [y - offset .. y + offset]
+    |> List.filter (fun loc -> 
+        let i, j = loc
+        loc <> coord && i >= 0 && j >= 0 && i < boardWidth && j < boardHeight)
 
-
-let private getSurroundingLetters = getSurroundingLettersKernel 3
-
-let private getBoardLetter (board : Element[,]) (x, y) =
-    let width = Array2D.length1 board
-    let height = Array2D.length2 board
-    match x + 1 with
-    | i when i >= width-1 || i < 1 ->
-        failwith "X index out of bounds"
-    | i ->
-        match y + 1 with
-        | j when j >= height-1 || j < 1 ->
-            failwith "Y index out of bounds"
-        | j ->
-            match board.[i,j] with
-            | Tile c -> c
-            | Border -> failwith "Cannot get letter from border (should not happen)"
-
-
-let private getAllCoords board =
-    List.allPairs [0 .. (Array2D.length1 board - 3)] [0 .. (Array2D.length2 board - 3)]
-
+let private getSurroundingCoords = getCoordsKernel 3
 
 let createBoard (lines : string list) : Board =
-    let boardLength = (List.tryHead lines).Value.Length + 2
-    let boardHeight = lines.Length + 2
+    let boardLength = (List.tryHead lines).Value.Length
+    let boardHeight = lines.Length
 
     let elementArrays = lines
-                        |> List.map (fun line -> line.ToCharArray() 
-                                                |> Array.map Tile)
+                        |> List.map (fun line -> line.ToCharArray())
                         |> List.toArray
 
+    let allCoords = List.allPairs [0 .. boardLength - 1] [0 .. boardHeight - 1]
     let board = Array2D.init boardLength boardHeight (fun x y ->
-        match x with
-        | i when i = 0 || i = boardLength - 1 ->
-            Border
-        | i ->
-            match y with
-            | j when j = 0 || j = boardHeight - 1 ->
-                Border
-            | j ->
-                elementArrays.[j-1].[i-1])
+        elementArrays.[y].[x])
     
-    {
-        neighbors = getSurroundingLetters board;
-        letter = getBoardLetter board;
-        allCoords = getAllCoords board;
-    }
+    let rec buildGraph (x, y) =
+        {
+            value = board.[x, y];
+            neighbors = lazy (getSurroundingCoords
+                                <| (board.GetLength(0), board.GetLength(1))
+                                <| (x, y)
+                             |> List.map buildGraph)
+        }
 
+    {
+        allNodes = List.map buildGraph allCoords
+    }

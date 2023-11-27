@@ -4,10 +4,10 @@ type NodeValue =
 | RunnningWord of string
 | FullWord of string
 
-type Node =
+type TrieNode =
     {
         value: NodeValue;
-        children: Map<char, Node>
+        children: Map<char, TrieNode>
     }
     member this.nodeAt = this.children.TryFind
 
