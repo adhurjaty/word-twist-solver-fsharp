@@ -3,23 +3,33 @@ module Solver
 open WordDictionary
 open PuzzleBoard
 
-let rec getWords (trie: TrieNode) (node: BoardNode) =
-    let currentWord = match trie.value with
+type SearchState =
+    {
+        trie: TrieNode;
+        node: BoardNode;
+    }
+    member this.nextState = fun boardNode ->
+        this.trie.nodeAt boardNode.value
+        |> Option.map (fun (trieNode) ->
+            { 
+                trie = trieNode;
+                node = boardNode
+            })
+
+let rec getWords state =
+    let currentWord = match state.trie.value with
                         | RunnningWord _ -> []
                         | FullWord word -> [word]
     currentWord 
-    @ (node.neighbors.Value
-        |> List.choose (fun (neighborNode) ->
-            trie.nodeAt neighborNode.value
-            |> Option.map (fun (trieNode) -> trieNode, neighborNode))
-        |> List.collect (fun (trieNode, neighborNode) -> 
-            getWords trieNode neighborNode))
+    @ (state.node.neighbors.Value
+        |> List.choose state.nextState
+        |> List.collect getWords)
 
 
-let getAllWords (board: Board) trie =
-    let wordGetter = getWords trie
+let getAllWords (board: Board) (trie: TrieNode) =
 
-    List.fold (fun wordSet node -> Set.union wordSet (Set.ofList (wordGetter node))) 
+    List.fold (fun wordSet node ->
+        Set.union wordSet (Set.ofList (getWords { trie = trie; node = node }))) 
     <| Set.empty
     <| board.allNodes
 
@@ -28,6 +38,3 @@ let solve boardWords dictWords =
     let trie = buildTrie dictWords
 
     getAllWords board trie
-
-
-    

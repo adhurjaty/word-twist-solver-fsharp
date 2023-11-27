@@ -17,7 +17,7 @@ let buildTrie (words: string list) =
         |> List.filter (fun word -> word.Length > curIdx)
         |> List.groupBy (fun word -> word.[curIdx])
         |> Map.ofList
-        |> Map.map (fun letter group ->
+        |> Map.map (fun _ group ->
             {
                 value = match List.tryFind (fun (word : string) -> word.Length = curIdx + 1) group with
                         | Some word -> FullWord word
