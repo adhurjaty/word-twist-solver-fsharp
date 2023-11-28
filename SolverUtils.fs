@@ -1,5 +1,6 @@
 module SolverUtils
 
+open Utils
 open WordDictionary
 open PuzzleBoard
 
@@ -16,11 +17,13 @@ type SearchState =
                 node = boardNode
             })
 
-let rec getWords state =
+let rec private getWordsHelper state =
     let currentWord = match state.trie.value with
                         | RunnningWord _ -> []
                         | FullWord word -> [word]
     currentWord 
     @ (state.node.neighbors.Value
         |> List.choose state.nextState
-        |> List.collect getWords)
+        |> List.collect getWordsHelper)
+
+let getWords = memoize getWordsHelper

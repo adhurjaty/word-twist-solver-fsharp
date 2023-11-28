@@ -1,5 +1,7 @@
 module Utils
 
+open System.Collections.Generic
+
 let memoize f =
     let dict = Dictionary<_, _>();
     fun c ->
